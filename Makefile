@@ -6,7 +6,7 @@
 #    By: enanrock <marvin42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2016/12/02 11:41:31 by enanrock          #+#    #+#              #
-#    Updated: 2017/11/03 16:08:41 by enanrock         ###   ########.fr        #
+#    Updated: 2017/11/03 16:13:58 by enanrock         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -55,8 +55,10 @@ new_author: author
 where_is_malloc:
 	@make $@ -C ./libft/
 
-$(LIB_DIR):
+$(LIB_DIR): $(LIB_DIR)Makefile
 	git clone https://github.com/erwan-nanrocki/libft.git ./libft/
+
+$(LIB_DIR)Makefile:
 
 author:
 	@echo "\033[1;37m""\c"
