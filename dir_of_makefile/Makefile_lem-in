@@ -1,0 +1,74 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile_lem-in                                    :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: enanrock <marvin@42.fr>                    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2017/10/05 11:57:36 by enanrock          #+#    #+#              #
+#    Updated: 2017/10/21 19:31:20 by enanrock         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+NAME = lem-in
+
+FILES = main struct get_next_line is_gnl_comment option add_the_number_of_ants \
+		add_a_room add_a_tube find_a_road is_room_in_road print_map            \
+		print_research print_solution find_m_road print_final_solution         \
+		last_print every_ants_move
+
+LIB_DIR = ../libft/
+SRC_DIR = ../srcs/
+OBJ_DIR = ../objs/
+HDR_DIR = ../includes/
+
+OBJ_NAME = $(addsuffix .o, $(FILES))
+SRC_NAME = $(addsuffix .o, $(FILES))
+HDR_NAME = $(addsuffix .h, $(FILES))
+
+SRC = $(addprefix $(SRC_DIR), $(SRC_NAME))
+OBJ = $(addprefix $(OBJ_DIR), $(OBJ_NAME))
+HDR = $(addprefix $(HDR_DIR), $(HDR_NAME))
+
+CC = gcc
+
+LIBFT_FLAGS = -L$(LIB_DIR) -lft
+CC_FLAGS = -Wall -Wextra -Werror $(addprefix "-I", $(HDR_DIR)) -I$(LIB_DIR)
+# -g -fsanitize=address
+
+.PHONY : all leaks clean fclean re
+
+all: ../$(NAME)
+
+leaks:
+	leaks $(NAME)
+
+$(LIB_DIR)libft.a:
+	@make libft.a -C $(LIB_DIR)
+
+../$(NAME): $(LIB_DIR)libft.a $(OBJ)
+	@$(CC) $(CC_FLAGS) $(LIBFT_FLAGS) $^ -o $@
+	@echo "\033[0;32m""created   : $@""\033[m"
+	@echo "\033[1;36m""flags i use are ""\033[0;36m""$(CC_FLAGS)""\033[m"
+	@echo "\033[1;36m""and ""\033[0;36m""$(LIBFT_FLAGS)""\033[1;36m"" too, ""\c"
+	@echo "but only when i link $@""\033[m"
+
+$(OBJ_DIR)%.o: $(SRC_DIR)%.c $(HDR_DIR)%.h
+	@mkdir -p $(OBJ_DIR) 2> /tmp/a.del
+	@$(CC) $(CC_FLAGS) -c $< -o $@
+	@echo "\033[0;33m""created   : $@""\033[m"
+
+clean:
+	@echo "\033[0;31m""deleted all these files :""\033[m"
+	@make clean -C $(LIB_DIR)
+	@echo "\033[1;31m""\c"
+	@rm -fv $(OBJ) | column
+	@echo "\033[m""\c"
+
+fclean: clean
+	@make fclean -C $(LIB_DIR)
+	@echo "\033[0;31m""\c"
+	@rm -fv ../$(NAME)
+	@echo "\033[m""\c"
+
+re: fclean all
