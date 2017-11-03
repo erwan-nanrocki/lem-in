@@ -6,7 +6,7 @@
 #    By: enanrock <marvin42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2016/12/02 11:41:31 by enanrock          #+#    #+#              #
-#    Updated: 2017/11/03 16:00:36 by enanrock         ###   ########.fr        #
+#    Updated: 2017/11/03 16:02:06 by enanrock         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,7 +32,7 @@ leaks:
 	clear
 	@make $@ -C dir_of_makefile -f Makefile_lem-in
 
-clean:
+clean: libft
 	@make $@ -C dir_of_makefile -f Makefile_lem-in
 ifneq ("$(OBJ_DIR)", "./")
 	@echo "\033[1;31m""\c"
@@ -40,7 +40,7 @@ ifneq ("$(OBJ_DIR)", "./")
 	@echo "\033[m""\c"
 endif
 
-fclean:
+fclean: libft
 	@make $@ -C dir_of_makefile -f Makefile_lem-in
 ifneq ("$(OBJ_DIR)", "./")
 	@echo "\033[1;31m""\c"
