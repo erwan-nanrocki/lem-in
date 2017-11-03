@@ -6,7 +6,7 @@
 #    By: enanrock <marvin42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2016/12/02 11:41:31 by enanrock          #+#    #+#              #
-#    Updated: 2017/11/03 16:02:06 by enanrock         ###   ########.fr        #
+#    Updated: 2017/11/03 16:08:41 by enanrock         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,7 @@ HDR_DIR = ./includes/
 .PHONY: all leaks clean fclean re new_author norme victory tuto where_is_malloc\
 		tuto_map test test_mlp_0
 
-all: libft author .gitignore
+all: $(LIB_DIR) author .gitignore
 	@make $@ -C dir_of_makefile -f Makefile_lem-in
 
 $(NAME_001):
@@ -50,14 +50,12 @@ endif
 
 re: fclean all
 
-new_libft: libft
-
 new_author: author
 
 where_is_malloc:
 	@make $@ -C ./libft/
 
-libft:
+$(LIB_DIR):
 	git clone https://github.com/erwan-nanrocki/libft.git ./libft/
 
 author:
