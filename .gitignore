@@ -1,0 +1,5 @@
+./objs/
+lem-in
+*.swp
+*.o
+*.a
