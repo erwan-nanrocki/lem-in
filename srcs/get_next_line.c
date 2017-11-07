@@ -6,175 +6,104 @@
 /*   By: enanrock <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/07 11:39:09 by enanrock          #+#    #+#             */
-/*   Updated: 2017/10/02 20:59:35 by enanrock         ###   ########.fr       */
+/*   Updated: 2017/11/06 18:24:35 by enanrock         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static t_buf		*init_lst_buf(int fd, t_buf **lst_buf)
+static t_list		*add_fd_to_mem(t_list **mem, int new_fd)
 {
-	t_content	*tmp_content;
-	t_buf		*result;
+	t_buf	new_buf;
+	t_list	*new_head;
 
-	if (*lst_buf == NULL)
+	new_buf.fd = new_fd;
+	new_buf.result = I_NEED_TO_READ;
+	new_buf.length = 0;
+	new_buf.buf[0] = '\0';
+	new_head = ft_lstnew(&new_buf, sizeof(t_buf));
+	if (new_head == NULL)
+		return (NULL);
+	else if (new_head->content == NULL)
 	{
-		if ((tmp_content = (t_content *)malloc(sizeof(t_content))) == NULL)
-			return (NULL);
-		tmp_content->fd = fd;
-		if ((tmp_content->len = read(fd, tmp_content->buf, BUFF_SIZE)) == -1)
-		{
-			free(tmp_content);
-			return (NULL);
-		}
-		result = (t_buf *)ft_lstnew(tmp_content, sizeof(t_content));
-		free(tmp_content);
+		ft_lstdelone(&new_head, &ft_simple_del);
+		return (NULL);
 	}
-	else
-		result = *lst_buf;
-	return (result);
+	ft_lstadd(mem, new_head);
+	return (*mem);
 }
 
-static t_content	*init(char **line, size_t *len_line,
-		t_buf **lst_buf, int fd)
+static t_list		*initialize(char **line, t_list **mem, int fd)
 {
-	t_buf	*temp_buf;
+	t_list			*current_buf;
 
-	if ((line == NULL) || ((*lst_buf = init_lst_buf(fd, lst_buf)) == NULL))
-		return (NULL);
-	temp_buf = *lst_buf;
-	if ((*line = (char *)malloc(1 * sizeof(char))) == NULL)
-		return (NULL);
-	(*line)[0] = '\0';
-	*len_line = 0;
-	while ((temp_buf->next != NULL) && (temp_buf->content->fd != fd))
-		temp_buf = temp_buf->next;
-	if (temp_buf->content->fd == fd)
-		return (temp_buf->content);
-	if ((temp_buf->next = (t_buf *)malloc(sizeof(t_buf))) == NULL)
-		return (NULL);
-	if ((temp_buf->next->content =
-				(t_content *)malloc(sizeof(t_content))) == NULL)
-		return (NULL);
-	temp_buf->next->content_size = sizeof(t_content);
-	temp_buf->next->content->fd = fd;
-	temp_buf->next->next = NULL;
-	if ((temp_buf->next->content->len =
-				read(fd, temp_buf->next->content->buf, BUFF_SIZE)) == -1)
-		return (NULL);
-	return (temp_buf->next->content);
+	current_buf = *mem;
+	*line = ft_strnew(0);
+	while ((current_buf != NULL) &&
+			(((t_buf *)(current_buf->content))->fd != fd))
+		current_buf = current_buf->next;
+	if (current_buf == NULL)
+		current_buf = add_fd_to_mem(mem, fd);
+	if (current_buf == NULL)
+		((t_buf *)(current_buf->content))->result = ERROR;
+	return (current_buf);
 }
 
-static void			ralloc_nnjoin(char **line, size_t *len_line,
-		char *buf, ssize_t len_buf)
+static void			set_line(char **line, t_buf *src_buf)
 {
+	char	*next;
 	char	*temp_line;
 
-	temp_line = ft_strnnjoin(*line, buf, *len_line, len_buf);
-	*len_line += len_buf;
-	free(*line);
-	*line = temp_line;
+	if (src_buf->result != ERROR)
+	{
+		if ((next = ft_strnchr(src_buf->buf, '\n', src_buf->length)) == NULL)
+			next = src_buf->buf + src_buf->length;
+		else
+		{
+			next++;
+			src_buf->result = END_OF_LINE;
+		}
+		temp_line = ft_strnnjoin(*line, src_buf->buf,
+				ft_strlen(*line), (size_t)(next - src_buf->buf));
+		ft_memmove(src_buf->buf, next,
+				src_buf->length -= ft_strlen(temp_line) - ft_strlen(*line));
+		ft_strdel(line);
+		*line = temp_line;
+	}
+}
+
+static void			terminate(char **line, t_buf *current_buf)
+{
+	if ((*line)[ft_strlen(*line) - 1] == '\n')
+		(*line)[ft_strlen(*line) - 1] = '\0';
+	if ((current_buf->result == END_OF_FILE) && ((*line)[0] != '\0'))
+		current_buf->result = END_OF_LINE;
 }
 
 int					get_next_line(const int fd, char **line)
 {
-	size_t			len_line;
-	t_content		*c_buf;
-	char			*temp_str;
-	static t_buf	*lst_buf = NULL;
+	static t_list	*mem = NULL;
+	t_list			*current_buf;
 
-	if ((fd < 0) || ((c_buf = init(line, &len_line, &lst_buf, fd)) == NULL))
-		return (-1);
-	if (c_buf->len == 0)
-		if ((c_buf->len = read(c_buf->fd, c_buf->buf, BUFF_SIZE)) == -1)
-			return (-1);
-	while (c_buf->len > 0)
-		if ((temp_str = ft_strnchr(c_buf->buf, '\n', c_buf->len)) == NULL)
+	if ((fd < 0) || (line == NULL))
+		return (ERROR);
+	current_buf = initialize(line, &mem, fd);
+	((t_buf *)(current_buf->content))->result = SET_LINE;
+	while (((t_buf *)(current_buf->content))->result == SET_LINE)
+	{
+		if (((t_buf *)(current_buf->content))->length == 0)
 		{
-			ralloc_nnjoin(line, &len_line, c_buf->buf, c_buf->len);
-			if ((c_buf->len = read(c_buf->fd, c_buf->buf, BUFF_SIZE)) == -1)
-				return (-1);
+			((t_buf *)(current_buf->content))->length =
+				read(fd, ((t_buf *)(current_buf->content))->buf, BUFF_SIZE);
+			if (((t_buf *)(current_buf->content))->length <= -1)
+				((t_buf *)(current_buf->content))->result = ERROR;
+			else if (((t_buf *)(current_buf->content))->length == 0)
+				((t_buf *)(current_buf->content))->result = END_OF_FILE;
+			else
+				((t_buf *)(current_buf->content))->result = SET_LINE;
 		}
-		else
-		{
-			ralloc_nnjoin(line, &len_line, c_buf->buf, temp_str - c_buf->buf);
-			ft_memmove(c_buf->buf, temp_str + 1,
-					c_buf->len = c_buf->len - (temp_str - c_buf->buf + 1));
-			return (1);
-		}
-	return (((*line)[0] == '\0') ? 0 : 1);
+		set_line(line, ((t_buf *)(current_buf->content)));
+	}
+	terminate(line, ((t_buf *)(current_buf->content)));
+	return (((t_buf *)(current_buf->content))->result);
 }
-/*
-**  #include <fcntl.h>
-**  #include <stdio.h>
-**  int					main(void)
-**  {
-**  	int		fd1;
-**  	int		fd2;
-**  	int		fd3;
-**  	char	*line;
-**  	int		result;
-**  	int		i;
-**  	int		i1;
-**  	int		i2;
-**  	fd1 = open("a1.txt", O_RDONLY);
-**  	fd2 = open("a2.txt", O_RDONLY);
-**  	fd3 = open("a3.txt", O_RDONLY);
-**  	printf("\n""fd1 = %d""\n""fd2 = %d""\n", fd1, fd2);
-**  	printf("BUFF_SIZE = %d""\n", BUFF_SIZE);
-**  	i = 0;
-**  	i1 = 1;
-**  	i2 = 1;
-**  	while (i++ < 5)
-**  	{
-**  		{
-**  			printf("\033[m""fd = %d""\n", fd1);
-**  			result = get_next_line(fd1, &line);
-**  			printf("\033[1;36m");
-**  			printf("result of get_next_line n*%d == %d""\033[m\n",
-**  					i1++, result);
-**  			if (line != NULL)
-**  			{
-**  				ft_putstr("\033[1;32m""line = \"""\033[1;35m");
-**  				ft_putstr(line);
-**  				ft_putstr("\033[1;32m""\"""\n");
-**  				free(line);
-**  			}
-**  		}
-**  		printf("\n");
-**  		{
-**  			printf("\033[m""fd = %d""\n", fd1);
-**  			result = get_next_line(fd1, &line);
-**  			printf("\033[1;36m");
-**  			printf("result of get_next_line n*%d == %d""\033[m\n",
-**  					i1++, result);
-**  			if (line != NULL)
-**  			{
-**  				ft_putstr("\033[1;32m""line = \"""\033[1;35m");
-**  				ft_putstr(line);
-**  				ft_putstr("\033[1;32m""\"""\n");
-**  				free(line);
-**  			}
-**  		}
-**  		printf("\n");
-**  		{
-**  			ft_putstr("                                     ");
-**  			printf("\033[0;37;7m""fd = %d""\033[m""\n", fd2);
-**  			result = get_next_line(fd2, &line);
-**  			ft_putstr("                                     ");
-**  			printf("\033[1;36;7m");
-**  			printf("result of get_next_line n*%d == %d""\033[0;37m\n",
-**  					i2++, result);
-**  			if (line != NULL)
-**  			{
-**  				ft_putstr("                                     ");
-**  				ft_putstr("\033[1;32;7m""line = \"""\033[1;35;7m");
-**  				ft_putstr(line);
-**  				ft_putstr("\033[1;32;7m""\"""\n");
-**  				free(line);
-**  			}
-**  		}
-**  	}
-**  return (0);
-**  }
-*/
