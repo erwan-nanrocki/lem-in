@@ -6,7 +6,7 @@
 #    By: enanrock <marvin42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2016/12/02 11:41:31 by enanrock          #+#    #+#              #
-#    Updated: 2017/11/03 16:13:58 by enanrock         ###   ########.fr        #
+#    Updated: 2017/11/10 23:25:02 by enanrock         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,7 @@ HDR_DIR = ./includes/
 LIB = $(addsuffix Makefile, $(LIB_DIR))
 
 .PHONY: all leaks clean fclean re new_author norme victory tuto where_is_malloc\
-		tuto_map test test_mlp_0
+	tuto_map test test_mlp_0
 
 all: $(LIB) author .gitignore
 	@make $@ -C dir_of_makefile -f Makefile_lem-in
@@ -66,13 +66,13 @@ author:
 .gitignore:
 	@echo "\033[1;37m""\c"
 	echo "$(OBJ_DIR)"   > $@
-	echo "$(NAME_ALL)" >> $@"
+	echo "$(NAME_ALL)" >> $@
 	echo "*.swp"       >> $@
 	echo "*.o"         >> $@
 	echo "*.a"         >> $@
+	echo "*_DONE"      >> $@
 	@echo "\033[m"
-
-norme: $(LIB)
+	norme: $(LIB)
 	@make norme -C $(LIB_DIR)
 	@echo "\033[1;37m""norminette on $(SRC_DIR)""\033[m"
 	@norminette $(SRC_DIR)                                   \
