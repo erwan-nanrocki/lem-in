@@ -19,20 +19,22 @@ SRC_DIR = ./srcs/
 OBJ_DIR = ./objs/
 HDR_DIR = ./includes/
 
+LIB = $(addsuffix Makefile, $(LIB_DIR))
+
 .PHONY: all leaks clean fclean re new_author norme victory tuto where_is_malloc\
 		tuto_map test test_mlp_0
 
-all: $(LIB_DIR) author .gitignore
+all: $(LIB) author .gitignore
 	@make $@ -C dir_of_makefile -f Makefile_lem-in
 
-$(NAME_001):
+$(NAME_001): $(LIB)
 	@make $(addprefix ../, $@) -C dir_of_makefile -f Makefile_lem-in
 
 leaks:
 	clear
 	@make $@ -C dir_of_makefile -f Makefile_lem-in
 
-clean: libft
+clean: $(LIB)
 	@make $@ -C dir_of_makefile -f Makefile_lem-in
 ifneq ("$(OBJ_DIR)", "./")
 	@echo "\033[1;31m""\c"
@@ -40,7 +42,7 @@ ifneq ("$(OBJ_DIR)", "./")
 	@echo "\033[m""\c"
 endif
 
-fclean: libft
+fclean: $(LIB)
 	@make $@ -C dir_of_makefile -f Makefile_lem-in
 ifneq ("$(OBJ_DIR)", "./")
 	@echo "\033[1;31m""\c"
@@ -50,15 +52,11 @@ endif
 
 re: fclean all
 
-new_author: author
-
-where_is_malloc:
+where_is_malloc: $(LIB)
 	@make $@ -C ./libft/
 
-$(LIB_DIR): $(LIB_DIR)Makefile
+$(LIB):
 	git clone https://github.com/erwan-nanrocki/libft.git ./libft/
-
-$(LIB_DIR)Makefile:
 
 author:
 	@echo "\033[1;37m""\c"
@@ -67,18 +65,22 @@ author:
 
 .gitignore:
 	@echo "\033[1;37m""\c"
-	echo "$(OBJ_DIR)\n$(NAME_ALL)\n*.swp\n*.o\n*.a" > $@
+	echo "$(OBJ_DIR)"   > $@
+	echo "$(NAME_ALL)" >> $@"
+	echo "*.swp"       >> $@
+	echo "*.o"         >> $@
+	echo "*.a"         >> $@
 	@echo "\033[m"
 
-norme:
+norme: $(LIB)
 	@make norme -C $(LIB_DIR)
 	@echo "\033[1;37m""norminette on $(SRC_DIR)""\033[m"
-	@norminette $(SRC_DIR)                               \
+	@norminette $(SRC_DIR)                                   \
 		| sed ''s/Error/`echo "\033[0;31mError"`/g''     \
 		| sed ''s/Warning/`echo "\033[0;33mWarning"`/g'' \
 		| sed ''s/Norme/`echo "\033[0;32mNorme"`/g''
 	@echo "\033[1;37m""norminette on $(HDR_DIR)""\033[m"
-	@norminette $(HDR_DIR)                               \
+	@norminette $(HDR_DIR)                                   \
 		| sed ''s/Error/`echo "\033[0;31mError"`/g''     \
 		| sed ''s/Warning/`echo "\033[0;33mWarning"`/g'' \
 		| sed ''s/Norme/`echo "\033[1;34mNorme"`/g''
