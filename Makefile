@@ -6,7 +6,7 @@
 #    By: enanrock <marvin42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2016/12/02 11:41:31 by enanrock          #+#    #+#              #
-#    Updated: 2017/11/10 23:25:02 by enanrock         ###   ########.fr        #
+#    Updated: 2017/12/03 13:00:11 by enanrock         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,7 @@ LIB = $(addsuffix Makefile, $(LIB_DIR))
 .PHONY: all leaks clean fclean re new_author norme victory tuto where_is_malloc\
 	tuto_map test test_mlp_0
 
-all: $(LIB) author .gitignore
+all: $(LIB) author .gitignore .gitmodules
 	@make $@ -C dir_of_makefile -f Makefile_lem-in
 
 $(NAME_001): $(LIB)
@@ -62,6 +62,11 @@ author:
 	@echo "\033[1;37m""\c"
 	echo "enanrock" > author
 	@echo "\033[m"
+
+.gitmodules:
+	@echo '[submodule "./libft/"]'                        > $@
+	@echo '	path = ./libft/'                             >> $@
+	@echo '	url = git://github.com/erwan-nanrocki/libft' >> $@
 
 .gitignore:
 	@echo "\033[1;37m""\c"
