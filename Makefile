@@ -6,7 +6,7 @@
 #    By: enanrock <marvin42.fr>                    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2016/12/02 11:41:31 by enanrock          #+#    #+#              #
-#    Updated: 2017/12/03 13:00:11 by enanrock         ###   ########.fr        #
+#    Updated: 2017/12/03 13:05:31 by enanrock         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -64,7 +64,7 @@ author:
 	@echo "\033[m"
 
 .gitmodules:
-	@echo '[submodule "./libft/"]'                        > $@
+	@echo '[submodule "libft"]'                        > $@
 	@echo '	path = ./libft/'                             >> $@
 	@echo '	url = git://github.com/erwan-nanrocki/libft' >> $@
 
